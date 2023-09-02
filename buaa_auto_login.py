@@ -1,5 +1,15 @@
+import subprocess
 import time
 from selenium import webdriver
+
+
+def get_ubuntu_version():
+    try:
+        result = subprocess.run(['lsb_release', '-r', '-s'], stdout=subprocess.PIPE)
+        return result.stdout.decode().strip()
+    except Exception as e:
+        print("无法获取Ubuntu版本号：", e)
+        return None
 
 
 def do_login(driver):
@@ -12,7 +22,11 @@ def do_login(driver):
 if __name__ == '__main__':
     options = webdriver.FirefoxOptions()
     options.add_argument('-headless')
-    driver = webdriver.Firefox(options=options)
+    if get_ubuntu_version() >= "22":
+        service = webdriver.FirefoxService(executable_path="/snap/bin/geckodriver", log_output="./geckodriver.log")
+        driver = webdriver.Firefox(options=options, service=service)
+    else:
+        driver = webdriver.Firefox(options=options)
     # driver = webdriver.Firefox()
     try:
         driver.get("https://gw.buaa.edu.cn/")
